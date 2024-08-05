@@ -99,7 +99,7 @@ class CalendarPage extends StatelessWidget {
                     CalendarFormat.month: '显示整月',
                     CalendarFormat.week: '显示一周',
                   },
-                  headerVisible: false,
+                  headerVisible: true,//这样就可以用表头的箭头按钮来操作日历了
                   focusedDay: _calendarController.focusedDay.value,
                   selectedDayPredicate: (day) {
                     return isSameDay(
