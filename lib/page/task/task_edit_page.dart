@@ -257,7 +257,7 @@ class _TaskEditPageState extends State<TaskEditPage> {
                                         text: TimeHelper.time2editstr(now.startTime)),
                                     //autofillHints: [TimeHelper.time2editstr(now.startTime)],
                                     padding: EdgeInsets.zero,
-                                    decoration: BoxDecoration(
+                                    decoration: const BoxDecoration(
                                       border: Border(
                                         bottom: BorderSide(
                                           color: CupertinoColors.inactiveGray,
@@ -360,7 +360,7 @@ class _TaskEditPageState extends State<TaskEditPage> {
                                         text: TimeHelper.time2editstr(now.endTime)),
                                     //autofillHints: [TimeHelper.time2editstr(now.startTime)],
                                     padding: EdgeInsets.zero,
-                                    decoration: BoxDecoration(
+                                    decoration: const BoxDecoration(
                                       border: Border(
                                         bottom: BorderSide(
                                           color: CupertinoColors.inactiveGray,

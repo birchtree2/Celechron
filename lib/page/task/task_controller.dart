@@ -6,10 +6,11 @@ import 'package:celechron/utils/utils.dart';
 import 'package:celechron/model/scholar.dart';
 class TaskController extends GetxController {
   final taskList = Get.find<RxList<Task>>(tag: 'taskList');
-  final taskListLastUpdate =
-      Get.find<Rx<DateTime>>(tag: 'taskListLastUpdate');
+  final taskListLastUpdate = Get.find<Rx<DateTime>>(tag: 'taskListLastUpdate');
   final _db = Get.find<DatabaseHelper>(tag: 'db');
   final _scholar = Get.find<Rx<Scholar>>(tag: 'scholar');
+  //获取最后一次学在浙大任务更新时间
+  DateTime get lastXzzdUpdateTime => _scholar.value.lastUpdateTime;
   List<Task> get todoDeadlineList => taskList
       .where((element) => (element.type == TaskType.deadline &&
           (element.status == TaskStatus.running ||
@@ -22,15 +23,14 @@ class TaskController extends GetxController {
               element.status == TaskStatus.failed)))
       .toList();
 
-  List<Task> get fixedDeadlineList => taskList
-      .where((element) => (element.type == TaskType.fixed))
-      .toList();
+  List<Task> get fixedDeadlineList =>
+      taskList.where((element) => (element.type == TaskType.fixed)).toList();
 
   @override
   void onInit() {
-    updateDeadlineList(updateXzzd: true);
+    //updateDeadlineList(updateXzzd: true);
     Timer.periodic(const Duration(seconds: 1), (Timer t) {
-      updateDeadlineList(updateXzzd: true);
+      updateDeadlineList();
       refreshDeadlineList();
     });
     // Timer.periodic(const Duration(seconds: 10), (Timer t) {
@@ -58,15 +58,12 @@ class TaskController extends GetxController {
     taskListLastUpdate.value = DateTime.now();
   }
 
-  void updateDeadlineList({bool updateXzzd=false}) {
-    taskList.removeWhere(
-        (element) => element.status == TaskStatus.deleted);
-    // taskList.removeWhere(
-    //   (element) => element.timeNeeded==const Duration(days: 0, hours: 2, minutes: 30)
-    // );
+  void updateDeadlineList() {
+    taskList.removeWhere((element) => element.status == TaskStatus.deleted);
+
     Set<String> existingUid = {};
     List<Task> newDeadlineList = [];
-    if(updateXzzd){
+    if(_scholar.value.isLogan==true){//如果已经登录
       //删除原有的xzzd任务
       taskList.removeWhere(
         (element) => element.description=="xzzd" //这里应该给Task增加一个属性，但是要改的地方太多了，所以就这样了
@@ -78,7 +75,8 @@ class TaskController extends GetxController {
       if (deadline.type == TaskType.deadline) {
         if (deadline.timeSpent >= deadline.timeNeeded) {
           deadline.status = TaskStatus.completed;
-        } else if (deadline.endTime.isBefore(DateTime.now())) {
+        } else if (deadline.status != TaskStatus.completed &&
+            deadline.endTime.isBefore(DateTime.now())) {
           deadline.status = TaskStatus.failed;
         }
       } else if (deadline.type == TaskType.fixed) {
@@ -124,8 +122,7 @@ class TaskController extends GetxController {
   int suspendAllDeadline(context) {
     int count = 0;
     for (var x in taskList) {
-      if (x.type == TaskType.deadline &&
-          x.status == TaskStatus.running) {
+      if (x.type == TaskType.deadline && x.status == TaskStatus.running) {
         x.status = TaskStatus.suspended;
         count++;
       }
@@ -136,8 +133,7 @@ class TaskController extends GetxController {
   int continueAllDeadline(context) {
     int count = 0;
     for (var x in taskList) {
-      if (x.type == TaskType.deadline &&
-          x.status == TaskStatus.suspended) {
+      if (x.type == TaskType.deadline && x.status == TaskStatus.suspended) {
         x.status = TaskStatus.running;
         count++;
       }
